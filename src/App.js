@@ -25,7 +25,7 @@ class App extends Component {
       colors: ['green', 'yellow', 'red'],
       interimTranscript: '',
       finalTranscript: '',
-      confidence: 0,
+      confidence: 0.0,
     }
     this.toggleListen = this.toggleListen.bind(this)
     this.handleListen = this.handleListen.bind(this)
@@ -54,7 +54,7 @@ class App extends Component {
   }
   
   getConfidence(confidence) {
-    return this.setState({ confidence: confidence })
+    this.setState({ confidence: confidence })
   }
 
   toggleListen() {
@@ -86,21 +86,22 @@ class App extends Component {
     
     recognition.onresult = event => {
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        const confidence = event.results[i][0].confidence;
-        const isFinal = event.results[i].isFinal;
+        const transcript = event.results[i][0].transcript
+        const confidence = event.results[i][0].confidence
+        const isFinal = event.results[i].isFinal
         console.log(event.results)
         this.getConfidence(confidence)
         let phrase = this.confidenceHighEnough(isFinal, transcript, confidence)
         this.changeColor(phrase)
-        
-        this.handleChange(transcript, phrase)
+        this.getConfidence(confidence)
+        this.handleChange(transcript, phrase, confidence)
       }
     }
   }
 
-  handleChange(interimPhrase, finalPhrase) {
+  handleChange(interimPhrase, finalPhrase, confidence) {
     this.setState({interimTranscript: interimPhrase})
+    this.setState({confidence: confidence})
     this.setState(prevState => (
       {finalTranscript : prevState.finalTranscript.concat(finalPhrase)}
     ))
@@ -113,7 +114,7 @@ class App extends Component {
         <button id='microphone-btn' className='button on-off' onClick={this.toggleListen} />
         <div className="full">
           <textarea id='interim' className='interim' onChange={this.handleChange} value={interimTranscript}></textarea>
-          <input className="speech-precision interim" onChange={this.getConfidence} value={`Confiance : ${confidence}`}></input>
+          <input className="speech-precision interim" onChange={this.getConfidence} value={`Confiance : ${confidence.toFixed(4)*100}% `}></input>
         </div>
         <textarea id='final' className='final' onChange={this.handleChange} value={finalTranscript}></textarea>
         {colors.map((name, index) => (
